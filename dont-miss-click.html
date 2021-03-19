@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="jquery-3.5.1.js"></script>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <title>Document</title>
+</head>
+
+<style>
+    
+    body{
+        background-color: rgb(2, 11, 15)
+    }
+    
+    .content{
+        width: 600px;
+    }
+    
+    .game_table{
+        position: relative;
+        width: 100%;
+        height: 750px;
+        border: 3px solid white;
+        border-top: 3px solid rgb(114, 31, 6);
+        border-bottom: 3px solid seagreen;
+        
+    }
+    
+    
+    .ball{
+        position: absolute;
+        border-radius: 50%;  
+        left: 500px;
+    }
+    
+    .common-ball{
+        width: 50px;
+        height: 50px;
+        background-color: #fff;
+    }
+    
+    .rare-ball{
+        width: 40px;
+        height: 40px;
+        background-color: rgb(251, 100, 2);
+    }
+    
+    .epic-ball{
+        width: 30px;
+        height: 30px;
+        background-color: rgb(209, 67, 227);
+    }
+    
+    .legendary-ball{
+        width: 20px;
+        height: 20px;
+        background: linear-gradient(rgb(162, 255, 161), rgb(252, 254, 201), rgb(230, 46, 217));
+    }
+
+</style>
+
+<body>
+    
+<div class="container" align='center'>
+    <div class="row mt-5">
+        <div class="content">
+            <div class="title_group">
+                <h1 class="game_title text-light">Don't miss click</h1>
+                <h3 class="game_status text-light">Click to start</h3>
+            </div>
+            
+            <div class="game_table">
+            
+            </div>
+            
+        </div>
+        
+        <div class="col-5">
+            <button class="reset_button btn btn-success btn-lg">Reset the game</button>
+            <div class="info mt-2"></div>
+            
+            <div class="result_container">
+                <div class="score text-light fw-bold">
+                     
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    
+random_number_by_range = (min, max) => {
+    return Math.floor(Math.random() * (max - min) + min)
+}
+
+
+function game_over_check(position_top){
+    if (parseInt(position_top) <= 0){
+        return true
+    }
+    return false
+}
+
+
+function game_over(interval_1, interval_2) {
+    clearInterval(interval_1)
+    clearInterval(interval_2)
+    $('.ball').off('click')
+    $('.game_status').html('Game over')
+    console.log('game over')
+}
+
+
+
+
+class Ball{
+    static count = 0
+    constructor(tag_cls, point) {
+        this.tag_id = `ball_${Ball.count}`
+        this.tag_cls = tag_cls
+        
+        this.selector_id = '#' + this.tag_id
+        this.selector_cls = '.' + this.tag_cls
+        
+        this.tag = `<div id="${this.tag_id}" class="ball ${this.tag_cls}" style="top:700px"></div>`
+        this.position_left = random_number_by_range(0, 550)
+        this.point = point
+        
+        Ball.count++
+    }
+}
+
+
+class CommonBall extends Ball{
+    constructor(){
+        super('common-ball', 10)
+    }
+}
+
+
+class RareBall extends Ball{
+    constructor(){
+        super('rare-ball', 25)
+    }
+}
+
+
+class EpicBall extends Ball{
+    constructor(){
+        super('epic-ball', 40)
+    }
+}
+
+
+class LegendaryBall extends Ball{
+    constructor(){
+        super('legendary-ball', 60)
+    }
+}
+
+
+const balls = [
+    CommonBall,
+    RareBall,
+    EpicBall,
+    LegendaryBall,
+]
+
+// should implement record
+$(function() {
+    
+    let score = 0
+    let ball_spawn = setInterval(() => {
+        let Ball = balls[random_number_by_range(0, balls.length)]
+        let ball = new Ball()
+        let ball_tag = $(ball.tag)
+        
+        $(ball_tag).css({
+            left: ball.position_left,
+        })
+        $('.game_table').append(ball_tag)
+
+        $(ball_tag).on('click', function () {
+            score += ball.point
+            $(this).remove()
+            $('.score').html(`Score: ${score}`)
+        })
+        console.log(ball)      
+    }, 1000);
+    
+    let ball_goes_up = setInterval(() => {
+        $.each($('.game_table div'), function(index, value) {
+            let top = $(value).css('top');
+            $(value).css('top', parseInt(top)-1);   
+            
+            if (game_over_check(top)){
+                game_over(ball_spawn, ball_goes_up)
+            }
+        });
+    }, 8);
+    
+    $('.reset_button').on('click', function(){
+        $('.game_table').empty()
+        $('.ball').on('click', () => {
+            $(this).remove()
+        });
+        $('.game_status').html('Game over')
+        console.log('game over')
+    })
+})
+
+</script>
+    
+</body>
+
+</html>
